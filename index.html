@@ -387,37 +387,57 @@ const studentsCSV = `id	Full Name	tutor	session1	session2	session3
 20385980	Wanyia Shah	Lauren	NHS Pathology	NHS Radiology	Medical Regiment
 20386074	Skye Mclachlan	Lauren	National Probation Service	Inspire the Future	Why Us Marketing
 20387168	sonia karim	Batoul	NHS Pathology	NHS Radiology	EG on the Move
+20378173	Laiba Riaz	Amran	Medical Regiment	NHS Pathology	NHS Radiology
+20379896	Issa Sardar 	Amran	KPMG	PM +M	NHS Radiology
+20385458	Hamza iqbal	Batoul	The Kings Trust	Forbes Solicitors	NHS Radiology
+20370790	Helen Angel Shoby 	Dalia	The Kings Trust	Medical Regiment	NHS Radiology
+20380391	Jay Singh	Dalia	NHS Radiology	NHS Pathology	BAE SYSTEMS
+20381125	Muhammad Vachhiyat 	Sadik	NHS Pathology	NHS Radiology	BAE SYSTEMS
+20380791	Mohammed Aaryan Dar	Saimah	PM +M	KPMG	BAE SYSTEMS
+20349451	Farhan Malek	Steven	Why Us Marketing	PM +M	Your Digital Identity
+20378387	Aisha Ismail	Rafia	The Kings Trust	DWP/CIVIL SERVICE	EG on the Move
+20385547	Bilal Mahmood	Steven	PM +M	KPMG	Your Digital Identity
+20378374	Shafa Yaqoob	Amy	Forbes Solicitors	KPMG	BAE SYSTEMS
+20379041	iman mohammed 	Amy	Forbes Solicitors	PM +M	KPMG
+20382024	Anmol hussain	Sabah	DWP/CIVIL SERVICE	Forbes Solicitors	PM +M
+20377674	Millie Maxwell	Amy	DWP/CIVIL SERVICE	The Kings Trust	Inspire the Future
+20380293	Laleen Malik	Chris	Forbes Solicitors	DWP/CIVIL SERVICE	National Probation Service
+20380268	Bilal Hussain	Sabah	PM +M	KPMG	NHS Radiology
+20378740	Mustafa Hassan	Morgan	Lancashire Constabulary	Forbes Solicitors	KPMG
+20382060	Mohammed Ali Ilyas	Amy	Lancashire Constabulary	Forbes Solicitors	National Probation Service
 `;   // ← paste your full students CSV here (omitted for brevity)
 const roomsCSV = `tutor	room
-Sadik	SP308
-Salma	SP201
-Alex	SP306
-Mubasshira	SP309
 Chris	SP012
-Kayleigh	SP002
-Saba	SP010
-Paula	SP208
-Amy	SP207
+Sabah	SP005
+Amy	SP207 - SP208
 Morgan	SP209
-Shazia	SP005
-Rehana	SP010
-Amy	SP207
-Lauren	SP011
+Rehana	SP011
+Amy	SP010
+Lauren	SP208
+Steven	SP207
+Rafia	SP011
+Batoul	SP310
+Saimah	SP306
+Mubasshira	SP001
+Sadik	SP308
+Amran	SP307
+Dalia	SP001
+Alex	SP301
 `;       // ← paste your full Rooms CSV here
 const eventRoomsCSV = `events	session1	session2	session3
 BAE SYSTEMS			SP207
-DWP/CIVIL SERVICE	SP011	SP011	
+DWP/CIVIL SERVICE	SP010	SP010	
 EG on the Move			SP010
 Forbes Solicitors	SP207	SP207	
 Inspire the Future		SP201	SP201
-KPMG	SP201	SP202	SP203
-Lancashire Constabulary	SP215	SP215	SP215
-Medical Regiment	SP308	SP309	SP310
+KPMG	SP005	SP005	SP005
+Lancashire Constabulary	SP209	SP209	SP209
+Medical Regiment	SP308	SP308	SP308
 National Probation Service	SP012	SP012	SP012
 NHS Pathology	SP306	SP306	SP001
 NHS Radiology	SP001	SP001	SP301
 PM +M	SP011	SP011	
-The Kings Trust	SP012	SP012	SP012
+The Kings Trust	SP208	SP208	SP208
 Why Us Marketing	SP002	SP002	SP002
 Your Digital Identity		SP215	SP215
 `;  // ← paste your full Event_rooms CSV here
@@ -545,3 +565,4 @@ function downloadPDF() {
 
 </body>
 </html>
+
