@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industry Day Schedule</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f5f7fa, #e4e9f0);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+        .header {
+            background: #1a3c6d;
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.1rem;
+            letter-spacing: 0.5px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .student-info {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 5px solid #3b82f6;
+        }
+        .student-info p {
+            margin: 8px 0;
+            font-size: 1.1rem;
+        }
+        .student-info strong {
+            color: #1e40af;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 1rem;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #1e40af;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        tr:hover {
+            background: #eff6ff;
+            transition: background 0.2s;
+        }
+        .intro-text {
+            line-height: 1.6;
+            margin: 15px 0;
+            color: #4b5563;
+        }
+        .footer-text {
+            margin-top: 30px;
+            font-style: italic;
+            color: #6b7280;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        .input-group {
+            margin: 25px 0;
+            text-align: center;
+        }
+        input[type="text"] {
+            padding: 12px 18px;
+            width: 280px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1.1rem;
+        }
+        #output { display: none; }
+        @media (max-width: 600px) {
+            .content { padding: 20px; }
+            table, th, td { font-size: 0.95rem; padding: 10px; }
+        }
+    </style>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Industry Day Schedule</h1>
+    </div>
+
+    <div class="content">
+        <div class="input-group">
+            <input type="text" id="studentId" placeholder="Enter your Student ID (e.g. 20368896)">
+            <button class="btn" onclick="generateSchedule()">Generate My Schedule</button>
+        </div>
+
+        <div id="output">
+            <div class="student-info" id="studentInfo"></div>
+
+            <p class="intro-text">
+                The following is the order of events for Industry Day on <strong>Tuesday 10th Febuary</strong>.
+            </p>
+            <p class="intro-text">
+                These are the sessions you will be attending. Please note that times/rooms may be subject to change due to availability.
+                <strong>Please arrive on time.</strong>
+            </p>
+
+            <table id="scheduleTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Event</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <p class="intro-text">
+                <strong>Please bring:</strong> a pen and your Industry Day booklet to every session.
+            </p>
+
+            <p class="footer-text">
+                Have an amazing day<br>
+                — Hayley
+            </p>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="downloadPDF()">Download as PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────
+// Embedded CSV data (same as before)
+// ────────────────────────────────────────────────
+const studentsCSV = `id	Full Name	tutor	session1	session2	session3
+20378360	Aqsa ahmed 	Alex	National Probation Service	NHS Pathology	NHS Radiology
+20347528	Mohammed Zain Patel	Alex	NHS Radiology	Why Us Marketing	KPMG
+20357562	Amelia khan 	Amran	NHS Radiology	Medical Regiment	NHS Pathology
+20359110	Komal Azram 	Alex	NHS Radiology	National Probation Service	NHS Pathology
+20360670	Shabana Iqbal	Mubasshira	Medical Regiment	Inspire the Future	NHS Pathology
+20365988	Raeesah Patel	Alex	National Probation Service	NHS Pathology	NHS Radiology
+20366254	Rameez Hussain	Lauren	Forbes Solicitors	Lancashire Constabulary	Inspire the Future
+20366523	Halimah bhatti	Mubasshira	NHS Radiology	Medical Regiment	NHS Pathology
+20368172	Rawda Ahmed Alkafoury 	Batoul	NHS Radiology	NHS Pathology	Your Digital Identity
+20368395	Mariya Begum	Alex	The Kings Trust	NHS Radiology	NHS Pathology
+20368611	Zidhaan Aslam	Mubasshira	Forbes Solicitors	PM +M	NHS Pathology
+20368757	Sabah Afzal 	Dalia	The Kings Trust	NHS Radiology	Lancashire Constabulary
+20368896	Munira Adam	Mubasshira	NHS Radiology	Medical Regiment	NHS Pathology
+20369138	Haleema Hussain 	Morgan	Lancashire Constabulary	Forbes Solicitors	National Probation Service
+20369179	teeba alsaedi	Amran	Medical Regiment	NHS Radiology	Inspire the Future
+20369331	Hifsa Moazam	Mubasshira	The Kings Trust	NHS Radiology	Medical Regiment
+20369369	Nayab Iqbal 	Amran	Medical Regiment	NHS Radiology	Inspire the Future
+20369659	Hasnain Shah	Chris	Why Us Marketing	Your Digital Identity	Lancashire Constabulary
+20369772	Muhammad badat	Alex	Forbes Solicitors	NHS Radiology	KPMG
+20369989	Mubarak bhatti	Alex	Forbes Solicitors	NHS Radiology	KPMG
+20370037	Rubab Imtiaz	Dalia	NHS Pathology	Inspire the Future	NHS Radiology
+20370548	Sanah jasat	Sabah	Lancashire Constabulary	National Probation Service	EG on the Move
+20370586	Esha ulla	Amy	KPMG	Forbes Solicitors	BAE SYSTEMS
+20370790	Helen Angel Shoby 	Dalia	The Kings Trust	NHS Radiology	Medical Regiment
+20370847	Mohammed Bilal Suleman 	Alex	Forbes Solicitors	NHS Radiology	KPMG
+20370914	Musaddiqul Haque	Rafia	KPMG	PM +M	BAE SYSTEMS
+20372135	faiza tanveer	Batoul	NHS Radiology	Medical Regiment	NHS Pathology
+20372340	sophie freeman	Dalia	National Probation Service	Lancashire Constabulary	NHS Pathology
+20373460	Muhammad ahmed awan	Amy	PM +M	KPMG	Your Digital Identity
+20376017	Sufyaan Ravat	Dalia	NHS Radiology	Medical Regiment	NHS Pathology
+20376058	Bailey Sagar	Rehana	KPMG	PM +M	BAE SYSTEMS
+20376291	Zainab Akram 	Batoul	NHS Radiology	Your Digital Identity	NHS Pathology
+20376492	aanisah karolia	Amy	Medical Regiment	PM +M	NHS Radiology
+20376779	Jayla Jacobs 	Amy	Why Us Marketing	KPMG	BAE SYSTEMS
+20377632	Saad Muhammad Ali	Amy	NHS Radiology	Medical Regiment	NHS Pathology
+20377644	Tayyabah Fulat	Amran	Medical Regiment	National Probation Service	NHS Radiology
+20377693	Mahnoor Haque	Steven	KPMG	PM +M	National Probation Service
+20377716	Aleeza Ahmed	Chris	DWP/CIVIL SERVICE	Medical Regiment	NHS Radiology
+20377750	Kian Beckett	Rehana	PM +M	Forbes Solicitors	National Probation Service
+20377761	Zain Ibrahim	Amran	NHS Pathology	PM +M	EG on the Move
+20377764	Aaryan Sheraz	Lauren	NHS Pathology	Lancashire Constabulary	Your Digital Identity
+20377797	Talha Muhammad 	Saimah	NHS Radiology	Why Us Marketing	EG on the Move
+20377896	Emm Sandham	Chris	National Probation Service	The Kings Trust	NHS Radiology
+20377959	Logan Upton 	Rafia	Why Us Marketing	DWP/CIVIL SERVICE	Inspire the Future
+20377975	Safira Malik	Dalia	NHS Pathology	Inspire the Future	NHS Radiology
+20377979	jessica hanvey 	Morgan	Forbes Solicitors	National Probation Service	Lancashire Constabulary
+20377993	Saniya Rehman	Rehana	NHS Radiology	Medical Regiment	NHS Pathology
+20378003	Yassin Miah	Steven	Why Us Marketing	Your Digital Identity	EG on the Move
+20378014	Aiman Ghisa	Mubasshira	NHS Radiology	Medical Regiment	NHS Pathology
+20378049	Summaya Azeem	Sabah	KPMG	PM +M	BAE SYSTEMS
+20378066	Aliya Rafiq	Amy	Lancashire Constabulary	Inspire the Future	NHS Pathology
+20378092	Fern foran	Rehana	NHS Radiology	Medical Regiment	NHS Pathology
+20378099	zainab makba	Sabah	National Probation Service	Lancashire Constabulary	EG on the Move
+20378100	Aliya Ussen	Lauren	Medical Regiment	NHS Radiology	NHS Pathology
+20378132	Haider Ali	Batoul	PM +M	Forbes Solicitors	EG on the Move
+20378167	Mia Henderson	Morgan	National Probation Service	Forbes Solicitors	BAE SYSTEMS
+20378173	Laiba Riaz	Amran	NHS Radiology	Medical Regiment	NHS Pathology
+20378174	Umaymah Khan	Sabah	NHS Pathology	National Probation Service	Lancashire Constabulary
+20378222	Rauf afeenwala	Rafia	KPMG	The Kings Trust	Why Us Marketing
+20378227	Aaron Roberts	Steven	Why Us Marketing	Lancashire Constabulary	Your Digital Identity
+20378242	lilly coates 	Chris	DWP/CIVIL SERVICE	Forbes Solicitors	Why Us Marketing
+20378343	Aimma Jeffrey	Amy	KPMG	Forbes Solicitors	BAE SYSTEMS
+20378367	Nabeel Ahmed	Lauren	NHS Pathology	NHS Radiology	Medical Regiment
+20378430	Faiza Bibi 	Amran	Medical Regiment	NHS Radiology	Inspire the Future
+20378447	juwariyah majeed	Alex	NHS Radiology	National Probation Service	NHS Pathology
+20378464	Hanifa Bibi 	Amran	NHS Radiology	Inspire the Future	Medical Regiment
+20378471	Simon saju	Saimah	NHS Radiology	Medical Regiment	NHS Pathology
+20378491	Javeriya Syed 	Dalia	NHS Radiology	NHS Pathology	EG on the Move
+20378499	Aamina Lambat 	Dalia	NHS Radiology	NHS Pathology	EG on the Move
+20378500	fatima ugradar	Alex	National Probation Service	NHS Radiology	NHS Pathology
+20378536	Harriet	Sabah	National Probation Service	Forbes Solicitors	BAE SYSTEMS
+20378540	Mustapha darboe	Rehana	NHS Radiology	Forbes Solicitors	Why Us Marketing
+20378548	Hiba mehrban	Morgan	DWP/CIVIL SERVICE	The Kings Trust	Why Us Marketing
+20378568	Raihanah zubair mulla	Amy	KPMG	Lancashire Constabulary	Your Digital Identity
+20378580	Muhammad Ziyan Nazeer Iqbal	Rehana	Lancashire Constabulary	Your Digital Identity	BAE SYSTEMS
+20378589	Zoya Ali	Batoul	NHS Radiology	Medical Regiment	NHS Pathology
+20378596	Hanna Akil	Rehana	NHS Radiology	NHS Pathology	Inspire the Future
+20378608	safaa ali	Batoul	NHS Radiology	NHS Pathology	EG on the Move
+20378610	Saima Sidat	Rafia	The Kings Trust	KPMG	Why Us Marketing
+20378686	Alishba Jamil 	Amran	Medical Regiment	NHS Radiology	Inspire the Future
+20378688	Juwairiya Hussnain	Amy	KPMG	Forbes Solicitors	Inspire the Future
+20378696	Sana Gen	Lauren	Lancashire Constabulary	The Kings Trust	Inspire the Future
+20378700	Saarah Chopdat 	Sabah	National Probation Service	NHS Pathology	Lancashire Constabulary
+20378705	Muhammad Yousaf	Amran	PM +M	NHS Radiology	National Probation Service
+20378737	Asiya Patel 	Lauren	Forbes Solicitors	NHS Pathology	NHS Radiology
+20378744	Meerab Mahmood 	Batoul	NHS Radiology	Medical Regiment	NHS Pathology
+20378748	Fatima Butt	Morgan	PM +M	Forbes Solicitors	BAE SYSTEMS
+20378753	Bibi Aiysha Bashir Kousar	Amran	NHS Radiology	Medical Regiment	NHS Pathology
+20378760	Charlotte Prest	Morgan	Forbes Solicitors	National Probation Service	BAE SYSTEMS
+20378762	Shahroze Shakeel	Steven	PM +M	Your Digital Identity	NHS Radiology
+20379772	Alina	Chris	Forbes Solicitors	DWP/CIVIL SERVICE	National Probation Service
+20378795	Mariyah Musa	Rehana	The Kings Trust	DWP/CIVIL SERVICE	Lancashire Constabulary
+20378797	zubaydah limbada	Rehana	NHS Radiology	Inspire the Future	NHS Pathology
+20378837	Lily Drugan	Morgan	Forbes Solicitors	Lancashire Constabulary	National Probation Service
+20378846	Sammavia Akhtar	Sabah	Medical Regiment	NHS Radiology	NHS Pathology
+20378848	Abeerah awan 	Amy	NHS Pathology	NHS Radiology	Medical Regiment
+20378862	Fayaaz Munshi	Saimah	NHS Pathology	NHS Radiology	Medical Regiment
+20378911	Meena Begum	Amran	Medical Regiment	NHS Radiology	Inspire the Future
+20378984	Danielle Waddington 	Rafia	The Kings Trust	Your Digital Identity	NHS Pathology
+20379059	Ayaan patel	Alex	NHS Pathology	NHS Radiology	EG on the Move
+20379065	Mariyam Desai	Lauren	The Kings Trust	DWP/CIVIL SERVICE	Lancashire Constabulary
+20379123	Maisha Chowdhury 	Chris	DWP/CIVIL SERVICE	Forbes Solicitors	National Probation Service
+20379157	Humayra Altaf Patel	Mubasshira	NHS Radiology	Medical Regiment	NHS Pathology
+20379159	Ahmed Farag	Saimah	NHS Radiology	Medical Regiment	NHS Pathology
+20379161	Safa Patel	Amy	NHS Radiology	Inspire the Future	NHS Pathology
+20379226	Mehreen Islam	Rafia	The Kings Trust	NHS Pathology	Medical Regiment
+20379251	tippi anastasia	Sabah	NHS Radiology	NHS Pathology	Medical Regiment
+20379350	Daniel Oblakowski	Rehana	Forbes Solicitors	Why Us Marketing	NHS Radiology
+20379359	Humaira Laher	Rehana	Medical Regiment	NHS Radiology	NHS Pathology
+20379361	Azaan Sharif	Rehana	NHS Radiology	Your Digital Identity	NHS Pathology
+20379362	Waniya Choudhry 	Mubasshira	NHS Pathology	NHS Radiology	Medical Regiment
+20379378	Zoha Noor Ullah 	Amy	Medical Regiment	NHS Radiology	NHS Pathology
+20379380	Fatima Noor Ullah 	Chris	DWP/CIVIL SERVICE	Medical Regiment	NHS Radiology
+20379385	Sophia Ali	Rehana	Lancashire Constabulary	Medical Regiment	BAE SYSTEMS
+20379396	Muhammad Lorgat	Steven	NHS Radiology	PM +M	KPMG
+20379456	Uzair Tai	Dalia	NHS Radiology	NHS Pathology	EG on the Move
+20379490	Holly May Meadowcroft  	Morgan	Lancashire Constabulary	Forbes Solicitors	National Probation Service
+20379519	Keira Challenger	Morgan	Forbes Solicitors	National Probation Service	Lancashire Constabulary
+20379524	Zuharah Iqbal	Amy	Forbes Solicitors	DWP/CIVIL SERVICE	Lancashire Constabulary
+20379560	Mohammad ali kouser 	Saimah	PM +M	Inspire the Future	KPMG
+20379592	Amnah Mughal	Amy	Medical Regiment	NHS Radiology	NHS Pathology
+20379624	Noor Fatima	Sabah	DWP/CIVIL SERVICE	PM +M	KPMG
+20379640	Munir Patel 	Amy	The Kings Trust	KPMG	BAE SYSTEMS
+20379710	Zunaira 	Lauren	NHS Radiology	NHS Pathology	Medical Regiment
+20379767	Ace Phoenix 	Rafia	The Kings Trust	National Probation Service	Why Us Marketing
+20379774	ifza athar	Morgan	Forbes Solicitors	National Probation Service	Lancashire Constabulary
+20379819	Igor malagocki	Dalia	NHS Pathology	NHS Radiology	Medical Regiment
+20379890	Uzayr patel	Rafia	PM +M	KPMG	Your Digital Identity
+20379894	Khizar Panvala	Steven	KPMG	Why Us Marketing	EG on the Move
+20379896	Issa Sardar 	Amran	NHS Radiology	KPMG	EG on the Move
+20379909	Sheeza Ali kanwal	Saimah	Forbes Solicitors	NHS Radiology	NHS Pathology
+20379937	Aayan Akhtar	Saimah	Why Us Marketing	Forbes Solicitors	NHS Pathology
+20380117	Mohammed-Murtaza Hussain	Saimah	NHS Radiology	KPMG	Why Us Marketing
+20380140	Jessica Arthurs	Chris	NHS Radiology	The Kings Trust	National Probation Service
+20380144	Hanasa Abdullah 	Rafia	NHS Radiology	NHS Pathology	Medical Regiment
+20380154	Sahl Balesaria	Dalia	NHS Pathology	KPMG	EG on the Move
+20380200	Mohammed Ehsan Sheraz	Amy	The Kings Trust	Inspire the Future	EG on the Move
+20380214	Anam Ahmed 	Mubasshira	Medical Regiment	DWP/CIVIL SERVICE	NHS Radiology
+20380266	Perka	Amran	NHS Radiology	NHS Pathology	Medical Regiment
+20380289	Aayan Choudhry	Amy	KPMG	Why Us Marketing	BAE SYSTEMS
+20380340	Tayba Shaheen	Mubasshira	Medical Regiment	NHS Radiology	NHS Pathology
+20380357	Alishba Zaman	Lauren	Lancashire Constabulary	Inspire the Future	NHS Pathology
+20380374	Safaa Bhatti 	Batoul	NHS Radiology	DWP/CIVIL SERVICE	NHS Pathology
+20380431	Rafay abdul	Morgan	Lancashire Constabulary	Forbes Solicitors	KPMG
+20380447	Alyan Malik	Amy	KPMG	The Kings Trust	Your Digital Identity
+20380469	Mohammed Aamir Khan 	Rafia	Why Us Marketing	Your Digital Identity	Lancashire Constabulary
+20380473	Muhammad bhagat	Steven	National Probation Service	The Kings Trust	Lancashire Constabulary
+20380537	Muhammed-Yaseen Mogradia	Steven	PM +M	KPMG	Why Us Marketing
+20380575	Riyad Ibrahim 	Rehana	NHS Pathology	NHS Radiology	EG on the Move
+20380576	Samuel Akinfemiwa 	Chris	PM +M	KPMG	BAE SYSTEMS
+20380579	Iqra Hussain	Chris	Forbes Solicitors	DWP/CIVIL SERVICE	National Probation Service
+20380643	Mohammed farhan ahmed	Rafia	Why Us Marketing	Lancashire Constabulary	Your Digital Identity
+20380651	Muaz Khansia	Amy	KPMG	Inspire the Future	Why Us Marketing
+20380681	Mohammed Sultan khan	Amran	NHS Pathology	PM +M	BAE SYSTEMS
+20380694	Grace Hindle	Chris	DWP/CIVIL SERVICE	Forbes Solicitors	Why Us Marketing
+20380684	Hanna West-Qasam	Dalia	Medical Regiment	NHS Radiology	NHS Pathology
+20380736	Muneeb Ashfaq Razaq 	Saimah	NHS Radiology	NHS Pathology	Medical Regiment
+20380744	Haleema Ali	Dalia	NHS Pathology	Inspire the Future	NHS Radiology
+20381013	Lexie Louise Taylor	Lauren	Forbes Solicitors	National Probation Service	Lancashire Constabulary
+20381185	Qasim Nawaz 	Saimah	Forbes Solicitors	Why Us Marketing	KPMG
+20381207	Rayhan khan 	Amy	Lancashire Constabulary	Forbes Solicitors	National Probation Service
+20381228	sami butt 	Mubasshira	PM +M	The Kings Trust	EG on the Move
+20381303	Raffay Zeb	Amy	Lancashire Constabulary	Forbes Solicitors	National Probation Service
+20381336	Jack Wood	Rafia	Lancashire Constabulary	DWP/CIVIL SERVICE	Medical Regiment
+20381432	Ibrahim Ghous 	Steven	Why Us Marketing	Your Digital Identity	KPMG
+20381477	Wisdom John 	Mubasshira	Why Us Marketing	NHS Radiology	NHS Pathology
+20381544	Fatima	Alex	National Probation Service	NHS Radiology	NHS Pathology
+20381551	Maryam Nguyen	Amran	NHS Radiology	NHS Pathology	Medical Regiment
+20381707	Ali Hamza	Mubasshira	NHS Pathology	Why Us Marketing	EG on the Move
+20381779	Daniel maher	Lauren	PM +M	PM +M	KPMG
+20381782	Qasim rehman	Alex	Forbes Solicitors	NHS Radiology	KPMG
+20381784	Alix herbert	Morgan	Lancashire Constabulary	Forbes Solicitors	National Probation Service
+20381824	Charlotte Adams	Saimah	Forbes Solicitors	NHS Radiology	BAE SYSTEMS
+20381899	Ayaan Zulfiqar	Rehana	NHS Pathology	NHS Radiology	EG on the Move
+20382191	Maryam Mushtaqq	Rafia	Why Us Marketing	National Probation Service	Medical Regiment
+20382262	Isaac Sherliker 	Chris	Why Us Marketing	NHS Radiology	BAE SYSTEMS
+20382468	Sanyya Hamid	Lauren	Medical Regiment	NHS Pathology	NHS Radiology
+20382472	Areeba younis	Batoul	NHS Radiology	NHS Pathology	Medical Regiment
+20382585	Muhammad Hassan Naveed	Sabah	NHS Radiology	KPMG	NHS Pathology
+20382700	Alisha Aslam	Amy	Medical Regiment	NHS Radiology	BAE SYSTEMS
+20382731	Ali Asjad	Batoul	Medical Regiment	NHS Radiology	NHS Pathology
+20382850	Noah Hodgson	Amy	PM +M	NHS Radiology	Your Digital Identity
+20382916	Adriana Putrasevica 	Amy	Forbes Solicitors	DWP/CIVIL SERVICE	Lancashire Constabulary
+20382978	Hajira Sheikh	Dalia	NHS Radiology	The Kings Trust	Medical Regiment
+20383000	Dom Smugala	Morgan	Lancashire Constabulary	Forbes Solicitors	KPMG
+20383154	Yusuf Patel	Sabah	KPMG	PM +M	BAE SYSTEMS
+20383615	Zain Siddique 	Batoul	The Kings Trust	Forbes Solicitors	NHS Radiology
+20383816	Adam Patel 	Sabah	KPMG	PM +M	BAE SYSTEMS
+20383980	Yusuf Lorgat 	Rafia	DWP/CIVIL SERVICE	Why Us Marketing	EG on the Move
+20383984	Adam Ahmed mall	Steven	DWP/CIVIL SERVICE	Lancashire Constabulary	Your Digital Identity
+20384550	Owais Chaudhry	Dalia	Forbes Solicitors	NHS Radiology	NHS Pathology
+20384565	Muhammad Farees Khan	Steven	National Probation Service	Medical Regiment	Lancashire Constabulary
+20384620	Imogen Clayton	Steven	Medical Regiment	Lancashire Constabulary	NHS Pathology
+20384638	Hamza Patel	Mubasshira	PM +M	KPMG	NHS Pathology
+20384712	Hamza Iqbal 	Alex	Forbes Solicitors	NHS Radiology	KPMG
+20385329	hayden smith 	Alex	Lancashire Constabulary	NHS Pathology	Inspire the Future
+20385436	Ali Rahman 	Steven	DWP/CIVIL SERVICE	Lancashire Constabulary	Your Digital Identity
+20385442	Shujaat Chowdhury	Sabah	KPMG	PM +M	Your Digital Identity
+20385443	Abdelrahman Beha	Alex	DWP/CIVIL SERVICE	NHS Pathology	Medical Regiment
+20385458	Hamza iqbal	Batoul	The Kings Trust	Forbes Solicitors	NHS Radiology
+20385481	Aneesa Rizwan	Dalia	NHS Pathology	NHS Radiology	EG on the Move
+20385484	Muhammad raafay	Steven	KPMG	PM +M	Lancashire Constabulary
+20385494	Laiba ahmed	Rafia	NHS Radiology	Medical Regiment	Lancashire Constabulary
+20385495	Amaan Dahiwala	Lauren	Medical Regiment	NHS Pathology	NHS Radiology
+20385511	Wade willis 	Saimah	NHS Pathology	Medical Regiment	Lancashire Constabulary
+20385556	Zara Chaudhry	Amran	NHS Radiology	Medical Regiment	NHS Pathology
+20385637	Hamza Ahmed 	Amran	NHS Pathology	Lancashire Constabulary	EG on the Move
+20385756	Haamid Tunio	Sabah	Medical Regiment	NHS Radiology	NHS Pathology
+20385980	Wanyia Shah	Lauren	NHS Pathology	NHS Radiology	Medical Regiment
+20386074	Skye Mclachlan	Lauren	National Probation Service	Inspire the Future	Why Us Marketing
+20387168	sonia karim	Batoul	NHS Pathology	NHS Radiology	EG on the Move
+`;   // ← paste your full students CSV here (omitted for brevity)
+const roomsCSV = `tutor	room
+Sadik	SP308
+Salma	SP201
+Alex	SP306
+Mubasshira	SP309
+Chris	SP012
+Kayleigh	SP002
+Saba	SP010
+Paula	SP208
+Amy	SP207
+Morgan	SP209
+Shazia	SP005
+Rehana	SP010
+Amy	SP207
+Lauren	SP011
+`;       // ← paste your full Rooms CSV here
+const eventRoomsCSV = `events	session1	session2	session3
+BAE SYSTEMS			SP207
+DWP/CIVIL SERVICE	SP011	SP011	
+EG on the Move			SP010
+Forbes Solicitors	SP207	SP207	
+Inspire the Future		SP201	SP201
+KPMG	SP201	SP202	SP203
+Lancashire Constabulary	SP215	SP215	SP215
+Medical Regiment	SP308	SP309	SP310
+National Probation Service	SP012	SP012	SP012
+NHS Pathology	SP306	SP306	SP001
+NHS Radiology	SP001	SP001	SP301
+PM +M	SP011	SP011	
+The Kings Trust	SP012	SP012	SP012
+Why Us Marketing	SP002	SP002	SP002
+Your Digital Identity		SP215	SP215
+`;  // ← paste your full Event_rooms CSV here
+
+// Parse CSV function
+function parseCSV(csv) {
+    const lines = csv.trim().split('\n');
+    const headers = lines[0].split('\t').map(h => h.trim());
+    const data = [];
+    for (let i = 1; i < lines.length; i++) {
+        const row = lines[i].split('\t');
+        const obj = {};
+        headers.forEach((header, idx) => {
+            obj[header] = (row[idx] || '').trim();
+        });
+        data.push(obj);
+    }
+    return data;
+}
+
+// Load data
+const students = parseCSV(studentsCSV);
+const rooms = parseCSV(roomsCSV);
+const eventRooms = parseCSV(eventRoomsCSV);
+
+// Maps
+const studentMap = new Map(students.map(s => [s.id, s]));
+const tutorRoomMap = new Map(rooms.map(r => [r.tutor, r.room]));
+const eventRoomMap = new Map(eventRooms.map(e => [e.events, {
+    s1: e.session1 || '',
+    s2: e.session2 || '',
+    s3: e.session3 || ''
+}]));
+
+function generateSchedule() {
+    const id = document.getElementById('studentId').value.trim();
+    const student = studentMap.get(id);
+
+    if (!student) {
+        alert('Student ID not found. Please check and try again.');
+        return;
+    }
+
+    const name = student['Full Name'] || 'Unknown';
+    const tutor = student.tutor || 'Unknown';
+    const tutorRoom = tutorRoomMap.get(tutor) || 'Normal tutor rooms';
+
+    const s1 = student.session1 || '';
+    const s2 = student.session2 || '';
+    const s3 = student.session3 || '';
+
+    const room1 = eventRoomMap.get(s1)?.s1 || '';
+    const room2 = eventRoomMap.get(s2)?.s2 || '';
+    const room3 = eventRoomMap.get(s3)?.s3 || '';
+
+    // Student info
+    document.getElementById('studentInfo').innerHTML = `
+        <p><strong>Student Name:</strong> ${name}</p>
+        <p><strong>ID:</strong> ${id}</p>
+        <p><strong>Tutor:</strong> ${tutor}</p>
+    `;
+
+    // Table rows
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td>9:00 – 9:30</td>
+            <td>Tutor – ${tutor}</td>
+            <td>${tutorRoom}</td>
+        </tr>
+        <tr>
+            <td>9:30 – 10:15</td>
+            <td>Session 1: ${s1}</td>
+            <td>${room1}</td>
+        </tr>
+        <tr>
+            <td>10:15 – 10:30</td>
+            <td>Break</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td>10:30 – 11:15</td>
+            <td>Session 2: ${s2}</td>
+            <td>${room2}</td>
+        </tr>
+        <tr>
+            <td>11:15 – 11:30</td>
+            <td>Break</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td>11:30 – 12:15</td>
+            <td>Session 3: ${s3}</td>
+            <td>${room3}</td>
+        </tr>
+    `;
+
+    document.getElementById('output').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('output').offsetTop - 20, behavior: 'smooth' });
+}
+
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const element = document.getElementById('output');
+
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        const margin = 10;
+
+        pdf.addImage(imgData, 'PNG', margin, margin, imgW - margin*2, imgH - margin*2);
+        pdf.save(`Industry_Day_${document.getElementById('studentId').value || 'student'}.pdf`);
+    });
+}
+</script>
+
+</body>
+</html>
